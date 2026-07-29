@@ -1,0 +1,291 @@
+{
+  "updated": "2026-07-29T00:00:00Z",
+  "events": [
+    {
+      "date": "2026-07-28",
+      "day": "一",
+      "events": [
+        {
+          "time": "盤後",
+          "name": "PYPL PayPal 財報",
+          "importance": 3,
+          "category": "財報",
+          "tickers": [
+            "PYPL"
+          ],
+          "note": "Burry 做多，8x PE 深度價值"
+        }
+      ]
+    },
+    {
+      "date": "2026-07-29",
+      "day": "二",
+      "events": [
+        {
+          "time": "02:00 PM ET",
+          "name": "FOMC 利率決議",
+          "importance": 5,
+          "category": "總經",
+          "tickers": [],
+          "note": "預期維持 3.50-3.75%，關注 Warsh 記者會措辭"
+        },
+        {
+          "time": "02:30 PM ET",
+          "name": "Fed 主席 Warsh 記者會",
+          "importance": 5,
+          "category": "總經",
+          "tickers": [],
+          "note": "新格式無前瞻指引，記者會成唯一信號"
+        },
+        {
+          "time": "盤後",
+          "name": "MSFT 微軟財報",
+          "importance": 5,
+          "category": "財報",
+          "tickers": [
+            "MSFT"
+          ],
+          "note": "四派名人一致看好，Azure AI 資本支出是關鍵"
+        },
+        {
+          "time": "盤後",
+          "name": "META 財報",
+          "importance": 5,
+          "category": "財報",
+          "tickers": [
+            "META"
+          ],
+          "note": "EPS 預估 $7.19"
+        },
+        {
+          "time": "盤後",
+          "name": "QCOM 高通財報",
+          "importance": 3,
+          "category": "財報",
+          "tickers": [
+            "QCOM"
+          ],
+          "note": "EPS 預估 $2.24，低於去年"
+        },
+        {
+          "time": "盤後",
+          "name": "ARM 財報",
+          "importance": 3,
+          "category": "財報",
+          "tickers": [
+            "ARM"
+          ],
+          "note": "EPS 預估 $0.40"
+        },
+        {
+          "time": "盤後",
+          "name": "LRCX Lam Research 財報",
+          "importance": 3,
+          "category": "財報",
+          "tickers": [
+            "LRCX"
+          ],
+          "note": "半導體設備風向球"
+        },
+        {
+          "time": "盤後",
+          "name": "HOOD Robinhood 財報",
+          "importance": 2,
+          "category": "財報",
+          "tickers": [
+            "HOOD"
+          ],
+          "note": "Cathie Wood 持有"
+        }
+      ]
+    },
+    {
+      "date": "2026-07-30",
+      "day": "三",
+      "events": [
+        {
+          "time": "08:30 AM ET",
+          "name": "Q2 GDP 初值",
+          "importance": 5,
+          "category": "總經",
+          "tickers": [],
+          "note": "前值 2.1%"
+        },
+        {
+          "time": "08:30 AM ET",
+          "name": "6 月核心 PCE 通膨",
+          "importance": 5,
+          "category": "總經",
+          "tickers": [],
+          "note": "Fed 最愛的通膨指標，前值 3.4%"
+        },
+        {
+          "time": "盤後",
+          "name": "AAPL 蘋果財報",
+          "importance": 5,
+          "category": "財報",
+          "tickers": [
+            "AAPL"
+          ],
+          "note": "段永平第一大重倉（持續減持中）"
+        },
+        {
+          "time": "盤後",
+          "name": "AMZN 亞馬遜財報",
+          "importance": 5,
+          "category": "財報",
+          "tickers": [
+            "AMZN"
+          ],
+          "note": "Ackman + Bridgewater 一致看好"
+        },
+        {
+          "time": "盤後",
+          "name": "COIN Coinbase 財報",
+          "importance": 3,
+          "category": "財報",
+          "tickers": [
+            "COIN"
+          ],
+          "note": "Cathie Wood 持有"
+        },
+        {
+          "time": "盤後",
+          "name": "MSTR Strategy 財報",
+          "importance": 2,
+          "category": "財報",
+          "tickers": [
+            "MSTR"
+          ],
+          "note": "比特幣概念"
+        }
+      ]
+    },
+    {
+      "date": "2026-08-02",
+      "day": "六",
+      "events": [
+        {
+          "time": "待定",
+          "name": "OPEC+ 監控委員會會議",
+          "importance": 3,
+          "category": "商品",
+          "tickers": [
+            "XOM",
+            "CVX",
+            "OXY"
+          ],
+          "note": "討論 9 月配額，阿聯酋退出後裂痕風險"
+        }
+      ]
+    },
+    {
+      "date": "2026-08-03",
+      "day": "日",
+      "events": [
+        {
+          "time": "盤後",
+          "name": "PLTR Palantir 財報",
+          "importance": 3,
+          "category": "財報",
+          "tickers": [
+            "PLTR"
+          ],
+          "note": "段永平小倉試探 + Burry 放空"
+        },
+        {
+          "time": "盤後",
+          "name": "BRK.B 波克夏財報",
+          "importance": 3,
+          "category": "財報",
+          "tickers": [
+            "BRK"
+          ],
+          "note": "巴菲特接班後第一份完整年度"
+        }
+      ]
+    },
+    {
+      "date": "2026-08-04",
+      "day": "一",
+      "events": [
+        {
+          "time": "盤後",
+          "name": "SPCX SpaceX 首次公開財報",
+          "importance": 5,
+          "category": "財報",
+          "tickers": [
+            "SPCX"
+          ],
+          "note": "IPO 後首份財報，估 EPS -$0.25 / 營收 $6.98B"
+        },
+        {
+          "time": "盤後",
+          "name": "AMD 財報",
+          "importance": 4,
+          "category": "財報",
+          "tickers": [
+            "AMD"
+          ],
+          "note": "國會 Suozzi 賣在暴漲前，Ashley Moody 持有"
+        }
+      ]
+    },
+    {
+      "date": "2026-08-05",
+      "day": "二",
+      "events": [
+        {
+          "time": "盤後",
+          "name": "DIS 迪士尼財報",
+          "importance": 3,
+          "category": "財報",
+          "tickers": [
+            "DIS"
+          ],
+          "note": "段永平加倉 +112%"
+        },
+        {
+          "time": "盤後",
+          "name": "UBER 財報",
+          "importance": 3,
+          "category": "財報",
+          "tickers": [
+            "UBER"
+          ],
+          "note": "Ackman 第三大重倉 15.7%"
+        }
+      ]
+    },
+    {
+      "date": "2026-08-06",
+      "day": "三",
+      "events": [
+        {
+          "time": "開盤",
+          "name": "SPCX 首次大量解鎖（9.15 億股可交易）",
+          "importance": 5,
+          "category": "解鎖",
+          "tickers": [
+            "SPCX"
+          ],
+          "note": "20% 鎖定股可賣出，$107 生死保衛戰"
+        }
+      ]
+    },
+    {
+      "date": "2026-08-07",
+      "day": "四",
+      "events": [
+        {
+          "time": "08:30 AM ET",
+          "name": "7 月就業報告",
+          "importance": 5,
+          "category": "總經",
+          "tickers": [],
+          "note": "非農就業 + 失業率"
+        }
+      ]
+    }
+  ]
+}
