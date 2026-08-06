@@ -96,7 +96,7 @@
       <h1>📅 財經行事曆</h1>
       <div class="today-display" id="todayDisplay"></div>
     </div>
-    <p class="subtitle">只顯示未來事件，過去自動隱藏</p>
+    <p class="subtitle">直接讀取 events.md，編輯 MD 即更新</p>
   </div>
 
   <div class="filter-bar" id="filterBar">
@@ -113,16 +113,15 @@
 </div>
 
 <script>
-const API_BASE = window.location.origin + '/api';
-const DATA_URL = 'data/events.json';
+const DATA_URL = 'events.md';
 
 const IMP_STARS = { 5: '🔥', 4: '⭐', 3: '📌', 2: '💡' };
 const IMP_CLASS = { 5: 'imp-5', 4: 'imp-4', 3: 'imp-3', 2: 'imp-2' };
 const DAY_CN = ['日', '一', '二', '三', '四', '五', '六'];
-const WEEKDAY_CN = { 'sun': '日', 'mon': '一', 'tue': '二', 'wed': '三', 'thu': '四', 'fri': '五', 'sat': '六' };
 
 let allEvents = [];
 let currentFilter = 'all';
+let lastUpdated = '';
 
 function todayStr() {
   const d = new Date();
@@ -131,25 +130,89 @@ function todayStr() {
 
 function isToday(d) { return d === todayStr(); }
 
-function parseEvents(data) {
-  const result = [];
-  data.events.forEach(day => {
-    day.events.forEach(ev => {
-      result.push({
-        date: day.date,
-        day: day.day,
-        time: ev.time,
-        name: ev.name,
-        importance: ev.importance,
-        category: ev.category,
-        tickers: ev.tickers || [],
-        note: ev.note || ''
-      });
-    });
-  });
-  return result;
+/* ---- Markdown Parser ---- */
+function parseMarkdown(mdText) {
+  const events = [];
+  const lines = mdText.split('\n');
+  let currentDate = '';
+  let currentWeekday = '';
+  let inTable = false;
+  let colCount = 0;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+
+    // H3 heading: ### 2026-07-29（三）
+    const h3Match = line.match(/^###\s+(\d{4}-\d{2}-\d{2})（(.+?)）/);
+    if (h3Match) {
+      currentDate = h3Match[1];
+      currentWeekday = h3Match[2];
+      inTable = false;
+      continue;
+    }
+
+    // Table header row: | 日期 | 時間 | ...
+    if (line.startsWith('|') && line.includes('日期') && line.includes('時間')) {
+      inTable = true;
+      colCount = line.split('|').filter(c => c.trim()).length;
+      continue;
+    }
+
+    // Separator row: |---|---|...
+    if (inTable && line.startsWith('|---')) {
+      continue;
+    }
+
+    // Data row
+    if (inTable && line.startsWith('|') && currentDate) {
+      const cols = line.split('|').map(c => c.trim()).filter(c => c !== '');
+      if (cols.length >= 6) {
+        // cols: [日期(含星期), 時間, 事件, 重要性, 分類, 相關標的, 備註]
+        // Extract date from first column (e.g., "2026-07-29（三）")
+        const dateFromCol = cols[0].match(/^(\d{4}-\d{2}-\d{2})/);
+        const evDate = dateFromCol ? dateFromCol[1] : currentDate;
+
+        const timeStr = cols[1] || '';
+        // Strip markdown bold from event name
+        const evName = (cols[2] || '').replace(/\*\*/g, '');
+        // Count stars for importance
+        const impStr = cols[3] || '';
+        const impCount = (impStr.match(/⭐/g) || []).length || 3;
+        const category = cols[4] || '';
+        // Parse tickers: split by comma, or single value
+        const tickerRaw = cols[5] || '';
+        const tickers = tickerRaw ? tickerRaw.split(/[,，]\s*/) : [];
+        const note = cols[6] || '';
+
+        events.push({
+          date: evDate,
+          day: currentWeekday,
+          time: timeStr,
+          name: evName,
+          importance: impCount,
+          category: category,
+          tickers: tickers,
+          note: note
+        });
+      }
+    }
+
+    // End of table (blank line after data rows)
+    if (inTable && line === '') {
+      inTable = false;
+    }
+
+    // Section heading like ## or # — end current table context
+    if (line.startsWith('##') || line.startsWith('# ')) {
+      inTable = false;
+      currentDate = '';
+    }
+  }
+
+  return events;
 }
 
+/* ---- Filter & Render (unchanged logic) ---- */
 function filterEvents(events, filter) {
   const today = todayStr();
   if (filter === 'today') {
@@ -172,7 +235,7 @@ function groupByDate(events) {
   });
   return Object.keys(groups).sort().map(date => ({
     date,
-    weekday: DAY_CN[new Date(date).getDay()],
+    weekday: DAY_CN[new Date(date + 'T00:00:00').getDay()],
     events: groups[date]
   }));
 }
@@ -235,13 +298,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   fetch(DATA_URL)
     .then(res => {
-      if (!res.ok) throw new Error('Network error');
-      return res.json();
+      if (!res.ok) throw new Error('Network error: ' + res.status);
+      return res.text();
     })
-    .then(data => {
-      allEvents = parseEvents(data);
+    .then(text => {
+      allEvents = parseMarkdown(text);
+      lastUpdated = new Date().toISOString().slice(0, 16).replace('T', ' ');
       document.getElementById('updateTime').textContent =
-        `資料更新：${data.updated || 'N/A'}`;
+        `資料更新：${lastUpdated}（自動解析 events.md）`;
       render('all');
     })
     .catch(err => {
