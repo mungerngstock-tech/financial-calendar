@@ -1,77 +1,46 @@
 # 📅 財經行事曆 — Financial Calendar
 
-追蹤重大財經事件、財報、總經數據的全端應用。
+追蹤重大財經事件、財報、總經數據的純靜態行事曆。
 
 ## 專案結構
 
 ```
 financial-calendar/
-├── static/                # 前端靜態檔案
-│   ├── index.html         # 事件檢視器（自動隱藏過去事件）
-│   └── data/events.json   # 事件 JSON 資料
-├── api/
-│   └── server.py          # FastAPI 伺服器
-├── scripts/
-│   └── md2json.py         # Markdown → JSON 轉換工具
-├── events.md              # 可疊加的 Markdown 行事曆（主要編輯入口）
-├── requirements.txt       # Python 相依套件
+├── index.html             # 前端檢視器（直接解析 events.md）
+├── events.md              # 行事曆資料源（唯一編輯入口）
+├── static/
+│   └── index.html         # 備份副本（路徑引用不同）
 └── README.md
 ```
 
-## 快速開始
+## 工作原理
 
-### 1. 安裝依賴
-```bash
-pip install -r requirements.txt
-```
+- `index.html` 直接 fetch `events.md`，內建 Markdown 表格解析器，無需後端或構建步驟
+- GitHub Pages 自動部署，每次 push 後 1-2 分鐘生效
+- 頁面自動隱藏已過去的事件，僅顯示未來事件
 
-### 2. 啟動伺服器
-```bash
-uvicorn api.server:app --reload
-```
+## 新增事件
 
-開啟 http://localhost:8000 即可瀏覽。
-
-### 3. 新增事件
-編輯 `events.md`，按格式加入新事件，然後執行：
-```bash
-python scripts/md2json.py
-```
-重新整理瀏覽器即可看到更新。
-
-## API 文件
-
-啟動後瀏覽 http://localhost:8000/api/docs
-
-| 端點 | 說明 | 參數 |
-|------|------|------|
-| `GET /api/events` | 所有事件（可篩選） | `future_only`, `min_importance`, `category`, `date_from`, `date_to` |
-| `GET /api/events/today` | 今日事件 | — |
-| `GET /api/events/range?days=14` | 未來 N 天事件 | `days` |
-| `GET /api/health` | 健康檢查 | — |
-
-## 事件 Markdown 格式
+編輯 `events.md`，在對應日期區塊下按格式新增行：
 
 ```markdown
-### YYYY-MM-DD（星期）
-| 時間 | **事件名稱** | ⭐⭐⭐⭐⭐ | 分類 | 標的 | 備註 |
+### 2026-08-20（四）
+
+| 日期 | 時間 | 事件 | 重要性 | 分類 | 相關標的 | 備註 |
+|------|------|------|--------|------|----------|------|
+| 2026-08-20（四） | 盤前 08:00 AM ET | **WMT 沃爾瑪財報** | ⭐⭐⭐⭐⭐ | 財報 | WMT | 全球最大零售商 |
 ```
 
-直接在 `events.md` 中新增行即可，轉換工具會自動解析。
+push 後即更新，無需任何轉換步驟。
 
-## 部署
+## 事件格式說明
 
-### Render / Railway
-連接到 GitHub repo，選擇 `api/server.py` 作為啟動入口：
-```bash
-uvicorn api.server:app --host 0.0.0.0 --port $PORT
-```
-
-### Docker（選用）
-```dockerfile
-FROM python:3.12
-WORKDIR /app
-COPY . .
-RUN pip install -r requirements.txt
-CMD ["uvicorn", "api.server:app", "--host", "0.0.0.0", "--port", "8000"]
-```
+| 欄位 | 說明 | 範例 |
+|------|------|------|
+| 日期 | YYYY-MM-DD（星期） | 2026-08-20（四） |
+| 時間 | 盤前/盤後/具體時間 | 08:30 AM ET |
+| 事件 | 粗體表示最重要 | **7 月 CPI** |
+| 重要性 | ⭐越多越重要（2-5） | ⭐⭐⭐⭐⭐ |
+| 分類 | 總經 / 財報 / 解鎖 / 商品 | 總經 |
+| 相關標的 | 股票代碼或「全市場」 | AAPL, MSFT |
+| 備註 | 補充說明 | 核心CPI 前值 3.5% |
