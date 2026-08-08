@@ -13,8 +13,8 @@
     --text2: #a0a0b8;
     --accent: #4f8cff;
     --imp5: #ff4757;
-    --imp4: #ff6b81;
-    --imp3: #ffa502;
+    --imp4: #ffa502;
+    --imp3: #4f8cff;
     --imp2: #2ed573;
     --border: #2a2a4a;
     --shadow: 0 2px 8px rgba(0,0,0,.3);
@@ -25,33 +25,66 @@
     background: var(--bg); color: var(--text); line-height:1.6; padding: 20px;
   }
   .container { max-width: 860px; margin: 0 auto; }
-  h1 { font-size: 1.6rem; background: linear-gradient(135deg, #4f8cff, #ff6b81); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-  .subtitle { color: var(--text2); font-size: .85rem; margin-bottom: 4px; }
-  .header { margin-bottom: 24px; }
-  .header-top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+  h1 { font-size: 1.5rem; background: linear-gradient(135deg, #4f8cff, #ff6b81); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .subtitle { color: var(--text2); font-size: .85rem; }
+  .header { margin-bottom: 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
   .today-display { font-size: .85rem; color: var(--text2); }
-  .filter-bar { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+  .today-display strong { color: var(--accent); }
+
+  .filter-bar { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; position: sticky; top: 0; background: var(--bg); padding: 8px 0; z-index: 10; }
   .filter-btn {
     padding: 6px 16px; border-radius: 16px; border: 1px solid var(--border);
-    background: transparent; color: var(--text2); cursor: pointer;
+    background: var(--card); color: var(--text2); cursor: pointer;
     font-size: .82rem; transition: all .2s;
   }
   .filter-btn:hover { border-color: var(--accent); color: var(--text); }
   .filter-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-  .day-group { margin-bottom: 24px; }
+
+  .section-title {
+    font-size: .85rem; font-weight: 700; color: var(--text2); letter-spacing: 1px;
+    margin: 28px 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-title::before { content: ''; width: 4px; height: 14px; border-radius: 2px; background: var(--accent); }
+
+  .focus-list { display: flex; flex-direction: column; gap: 8px; }
+  .focus-card {
+    background: linear-gradient(135deg, rgba(79,140,255,.12), rgba(255,107,129,.06));
+    border: 1px solid var(--border); border-left: 4px solid var(--accent);
+    border-radius: 10px; padding: 12px 16px;
+  }
+  .focus-card.imp-5 { border-left-color: var(--imp5); }
+  .focus-card.imp-4 { border-left-color: var(--imp4); }
+  .focus-date { font-size: .75rem; color: var(--text2); font-weight: 600; }
+  .focus-row { display: flex; align-items: center; gap: 10px; margin-top: 4px; flex-wrap: wrap; }
+  .focus-row .ev-name { font-weight: 600; font-size: .95rem; flex: 1; min-width: 0; }
+  .imp-indicator { font-size: .8rem; white-space: nowrap; }
+  .badge {
+    font-size: .65rem; padding: 1px 8px; border-radius: 8px; background: rgba(255,255,255,.08);
+    color: var(--text2); white-space: nowrap;
+  }
+  .badge.imp5 { background: rgba(255,71,87,.18); color: #ff6b81; }
+  .badge.imp4 { background: rgba(255,165,2,.18); color: #ffc069; }
+  .badge.imp3 { background: rgba(79,140,255,.18); color: #7db0ff; }
+  .badge.imp2 { background: rgba(46,213,115,.18); color: #5ee0a0; }
+  .badge.cat { background: rgba(255,255,255,.06); }
+
+  .day-group { margin-bottom: 20px; }
   .day-header {
     display: flex; align-items: center; gap: 12px; margin-bottom: 10px;
     padding-bottom: 8px; border-bottom: 1px solid var(--border);
   }
   .day-header.today { border-bottom-color: var(--accent); }
-  .day-date { font-size: 1.05rem; font-weight: 600; }
+  .day-date { font-size: 1rem; font-weight: 600; }
   .day-weekday { font-size: .8rem; color: var(--text2); }
   .today-badge {
     background: var(--accent); color: #fff; font-size: .65rem;
     padding: 2px 10px; border-radius: 10px; font-weight: 500;
   }
+  .day-count { font-size: .72rem; color: var(--text2); background: rgba(255,255,255,.06); padding: 1px 8px; border-radius: 8px; }
+
   .event-card {
-    background: var(--card); border-radius: 8px; padding: 12px 16px;
+    background: var(--card); border-radius: 8px; padding: 10px 14px;
     margin-bottom: 8px; border-left: 3px solid var(--border);
     display: flex; gap: 12px; align-items: flex-start; transition: all .2s;
   }
@@ -71,32 +104,61 @@
     background: rgba(79, 140, 255, .15); color: var(--accent);
     font-size: .72rem; font-weight: 500; margin-right: 4px;
   }
-  .importance { display: flex; gap: 2px; }
+
   .empty { text-align: center; padding: 60px 20px; color: var(--text2); }
   .empty-icon { font-size: 2.5rem; margin-bottom: 12px; }
   .update-time { font-size: .75rem; color: var(--text2); margin-top: 30px; text-align: center; }
-  .past-section { margin-top: 32px; opacity: .4; }
-  .past-toggle {
-    background: none; border: none; color: var(--text2); cursor: pointer;
-    font-size: .82rem; padding: 8px; width: 100%; text-align: center;
+
+  /* Calendar */
+  .cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .cal-nav button {
+    background: var(--card); border: 1px solid var(--border); color: var(--text);
+    border-radius: 8px; padding: 4px 14px; cursor: pointer; font-size: .85rem;
   }
-  .past-toggle:hover { color: var(--text); }
-  .past-content { display: none; }
-  .past-content.show { display: block; }
+  .cal-nav button:hover { border-color: var(--accent); }
+  .cal-month { font-weight: 600; font-size: .9rem; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .cal-dow { text-align: center; font-size: .68rem; color: var(--text2); padding: 4px 0; font-weight: 600; }
+  .cal-cell {
+    background: var(--card); border-radius: 8px; min-height: 44px;
+    padding: 4px; cursor: pointer; text-align: center; border: 1px solid transparent;
+    transition: all .15s; position: relative;
+  }
+  .cal-cell:hover { border-color: var(--accent); }
+  .cal-cell.other-month { background: transparent; opacity: .35; cursor: default; }
+  .cal-cell.today { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
+  .cal-cell.selected { background: rgba(79,140,255,.25); border-color: var(--accent); }
+  .cal-daynum { font-size: .8rem; font-weight: 600; }
+  .cal-dots { display: flex; justify-content: center; gap: 2px; margin-top: 3px; flex-wrap: wrap; }
+  .cal-dot { width: 6px; height: 6px; border-radius: 50%; }
+  .cal-dot.imp5 { background: var(--imp5); }
+  .cal-dot.imp4 { background: var(--imp4); }
+  .cal-dot.imp3 { background: var(--imp3); }
+  .cal-dot.imp2 { background: var(--imp2); }
+  .cal-clear {
+    margin-top: 10px; text-align: center;
+  }
+  .cal-clear button {
+    background: none; border: 1px solid var(--border); color: var(--text2);
+    font-size: .75rem; padding: 4px 14px; border-radius: 12px; cursor: pointer;
+  }
+  .cal-clear button:hover { color: var(--text); border-color: var(--accent); }
+
   @media (max-width: 600px) {
     body { padding: 12px; }
     .event-card { padding: 10px 12px; }
+    .cal-cell { min-height: 40px; }
   }
 </style>
 </head>
 <body>
 <div class="container">
   <div class="header">
-    <div class="header-top">
+    <div>
       <h1>📅 財經行事曆</h1>
-      <div class="today-display" id="todayDisplay"></div>
+      <p class="subtitle">重大財報・總經・解鎖・商品</p>
     </div>
-    <p class="subtitle">直接讀取 events.md，編輯 MD 即更新</p>
+    <div class="today-display" id="todayDisplay"></div>
   </div>
 
   <div class="filter-bar" id="filterBar">
@@ -108,27 +170,49 @@
     <button class="filter-btn" data-filter="today">📌 今天</button>
   </div>
 
+  <div class="section-title">本週重點</div>
+  <div class="focus-list" id="focusList"></div>
+
+  <div class="section-title">事件時間線</div>
   <div id="eventList"></div>
+
+  <div class="section-title">月曆瀏覽</div>
+  <div class="cal-nav">
+    <button id="calPrev">◀ 上月</button>
+    <span class="cal-month" id="calMonth"></span>
+    <button id="calNext">下月 ▶</button>
+  </div>
+  <div class="cal-grid" id="calGrid"></div>
+  <div class="cal-clear" id="calClearWrap" style="display:none">
+    <button id="calClear">清除日期篩選</button>
+  </div>
+
   <div class="update-time" id="updateTime"></div>
 </div>
 
 <script>
 const DATA_URL = 'events.md';
 
-const IMP_STARS = { 5: '🔥', 4: '⭐', 3: '📌', 2: '💡' };
+const IMP_EMOJI = { 5: '🔥', 4: '⭐', 3: '📌', 2: '💡' };
 const IMP_CLASS = { 5: 'imp-5', 4: 'imp-4', 3: 'imp-3', 2: 'imp-2' };
+const IMP_BADGE = { 5: 'imp5', 4: 'imp4', 3: 'imp3', 2: 'imp2' };
 const DAY_CN = ['日', '一', '二', '三', '四', '五', '六'];
 
 let allEvents = [];
 let currentFilter = 'all';
-let lastUpdated = '';
+let selectedDate = null;
+let calYear = 0;
+let calMonth = 0;
 
 function todayStr() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
-
 function isToday(d) { return d === todayStr(); }
+function fmtMD(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  return `${d.getMonth()+1}/${d.getDate()}`;
+}
 
 /* ---- Markdown Parser ---- */
 function parseMarkdown(mdText) {
@@ -137,7 +221,6 @@ function parseMarkdown(mdText) {
   let currentDate = '';
   let currentWeekday = '';
   let inTable = false;
-  let colCount = 0;
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
@@ -161,7 +244,6 @@ function parseMarkdown(mdText) {
     // Table header row: | 時間 | 事件 | 重要性 | 分類 | 相關標的 | 備註 |
     if (line.startsWith('|') && line.includes('時間') && line.includes('事件')) {
       inTable = true;
-      colCount = line.split('|').filter(c => c.trim()).length;
       continue;
     }
 
@@ -178,13 +260,10 @@ function parseMarkdown(mdText) {
       if (cols.length >= 6) {
         // cols: [時間, 事件, 重要性, 分類, 相關標的, 備註]
         const timeStr = cols[0] || '';
-        // Strip markdown bold from event name
         const evName = (cols[1] || '').replace(/\*\*/g, '');
-        // Count stars for importance
         const impStr = cols[2] || '';
         const impCount = (impStr.match(/⭐/g) || []).length || 3;
         const category = cols[3] || '';
-        // Parse tickers: split by comma, or single value
         const tickerRaw = cols[4] || '';
         const tickers = tickerRaw ? tickerRaw.split(/[,，]\s*/) : [];
         const note = cols[5] || '';
@@ -211,13 +290,16 @@ function parseMarkdown(mdText) {
   return events;
 }
 
-/* ---- Filter & Render (unchanged logic) ---- */
+/* ---- Filters ---- */
 function filterEvents(events, filter) {
   const today = todayStr();
   if (filter === 'today') {
     return events.filter(e => e.date === today);
   }
   const upcoming = events.filter(e => e.date >= today);
+  if (selectedDate) {
+    return upcoming.filter(e => e.date === selectedDate);
+  }
   if (filter === 'all') return upcoming;
   if (filter === '5') return upcoming.filter(e => e.importance === 5);
   if (filter === '4') return upcoming.filter(e => e.importance >= 4);
@@ -239,8 +321,61 @@ function groupByDate(events) {
   }));
 }
 
-function render(filter) {
-  const filtered = filterEvents(allEvents, filter);
+/* ---- Card templates ---- */
+function cardHTML(e) {
+  const badgeClass = IMP_BADGE[e.importance] || 'imp3';
+  return `
+    <div class="event-card ${IMP_CLASS[e.importance] || ''}">
+      <div class="imp-indicator">${IMP_EMOJI[e.importance] || ''}</div>
+      <div class="event-body">
+        <div class="event-name">${e.name}</div>
+        <div class="event-meta">
+          <span class="event-time">🕐 ${e.time}</span>
+          <span class="badge ${badgeClass}">${e.category}</span>
+          ${e.tickers.map(t => `<span class="ticker">${t}</span>`).join('')}
+        </div>
+        ${e.note ? `<div class="event-note">${e.note}</div>` : ''}
+      </div>
+    </div>`;
+}
+
+/* ---- 本週重點 (next 7 days, highest importance first) ---- */
+function renderFocus() {
+  const today = todayStr();
+  const end = new Date();
+  end.setDate(end.getDate() + 6);
+  const endStr = `${end.getFullYear()}-${String(end.getMonth()+1).padStart(2,'0')}-${String(end.getDate()).padStart(2,'0')}`;
+
+  const focus = allEvents
+    .filter(e => e.date >= today && e.date <= endStr)
+    .sort((a, b) => b.importance - a.importance || a.date.localeCompare(b.date))
+    .slice(0, 5);
+
+  const el = document.getElementById('focusList');
+  if (focus.length === 0) {
+    el.innerHTML = `<div class="empty" style="padding:20px"><div>未來 7 天暫無重點事件</div></div>`;
+    return;
+  }
+  el.innerHTML = focus.map(e => `
+    <div class="focus-card ${IMP_CLASS[e.importance] || ''}">
+      <div class="focus-date">${fmtMD(e.date)}（星期${DAY_CN[new Date(e.date+'T00:00:00').getDay()]}）${isToday(e.date) ? '・今天' : ''}</div>
+      <div class="focus-row">
+        <span class="ev-name">${e.name}</span>
+        <span class="imp-indicator">${IMP_EMOJI[e.importance] || ''}</span>
+      </div>
+      <div class="event-meta">
+        <span class="event-time">🕐 ${e.time}</span>
+        <span class="badge cat">${e.category}</span>
+        ${e.tickers.map(t => `<span class="ticker">${t}</span>`).join('')}
+      </div>
+      ${e.note ? `<div class="event-note">${e.note}</div>` : ''}
+    </div>
+  `).join('');
+}
+
+/* ---- Timeline ---- */
+function renderTimeline() {
+  const filtered = filterEvents(allEvents, currentFilter);
   const grouped = groupByDate(filtered);
   const container = document.getElementById('eventList');
 
@@ -260,39 +395,101 @@ function render(filter) {
         <span class="day-date">${g.date}</span>
         <span class="day-weekday">星期${g.weekday}</span>
         ${isToday(g.date) ? '<span class="today-badge">今天</span>' : ''}
+        <span class="day-count">${g.events.length} 筆</span>
       </div>
-      ${g.events.map(e => `
-        <div class="event-card ${IMP_CLASS[e.importance] || ''}">
-          <div class="imp-indicator">${IMP_STARS[e.importance] || ''}</div>
-          <div class="event-body">
-            <div class="event-name">${e.name}</div>
-            <div class="event-meta">
-              <span class="event-time">🕐 ${e.time}</span>
-              <span>${e.category}</span>
-              ${e.tickers.map(t => `<span class="ticker">${t}</span>`).join('')}
-            </div>
-            ${e.note ? `<div class="event-note">${e.note}</div>` : ''}
-          </div>
-        </div>
-      `).join('')}
+      ${g.events.map(cardHTML).join('')}
     </div>
   `).join('');
 }
 
+/* ---- Calendar ---- */
+function renderCalendar() {
+  const grid = document.getElementById('calGrid');
+  const monthLabel = document.getElementById('calMonth');
+  const first = new Date(calYear, calMonth, 1);
+  const startDow = first.getDay();
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+
+  monthLabel.textContent = `${calYear} 年 ${calMonth + 1} 月`;
+
+  const dayEvents = {};
+  allEvents.forEach(e => {
+    const d = new Date(e.date + 'T00:00:00');
+    if (d.getFullYear() === calYear && d.getMonth() === calMonth) {
+      if (!dayEvents[d.getDate()]) dayEvents[d.getDate()] = [];
+      dayEvents[d.getDate()].push(e);
+    }
+  });
+
+  const today = todayStr();
+  let html = DAY_CN.map(d => `<div class="cal-dow">${d}</div>`).join('');
+
+  for (let i = 0; i < startDow; i++) {
+    html += `<div class="cal-cell other-month"></div>`;
+  }
+  for (let d = 1; d <= daysInMonth; d++) {
+    const ds = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const evs = dayEvents[d] || [];
+    const top = evs.slice(0, 4).sort((a,b) => b.importance - a.importance);
+    const cls = [
+      'cal-cell',
+      isToday(ds) ? 'today' : '',
+      selectedDate === ds ? 'selected' : ''
+    ].filter(Boolean).join(' ');
+
+    html += `
+      <div class="${cls}" data-date="${ds}">
+        <div class="cal-daynum">${d}</div>
+        ${evs.length ? `<div class="cal-dots">${top.map(e => `<span class="cal-dot ${IMP_CLASS[e.importance] || 'imp3'}"></span>`).join('')}${evs.length > 4 ? '<span style="font-size:.55rem;color:var(--text2)">+</span>' : ''}</div>` : ''}
+      </div>`;
+  }
+  grid.innerHTML = html;
+
+  grid.querySelectorAll('.cal-cell[data-date]').forEach(cell => {
+    cell.addEventListener('click', () => {
+      selectedDate = cell.dataset.date;
+      document.getElementById('calClearWrap').style.display = 'block';
+      renderCalendar();
+      renderTimeline();
+    });
+  });
+
+  document.getElementById('calClearWrap').style.display = selectedDate ? 'block' : 'none';
+}
+
+/* ---- Filter buttons ---- */
 function setFilter(filter) {
   currentFilter = filter;
   document.querySelectorAll('.filter-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.filter === filter);
   });
-  render(filter);
+  renderTimeline();
 }
 
+/* ---- Boot ---- */
 document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('todayDisplay').textContent =
-    `今天是 ${new Date().getFullYear()}年${new Date().getMonth()+1}月${new Date().getDate()}日`;
+  const now = new Date();
+  calYear = now.getFullYear();
+  calMonth = now.getMonth();
+
+  document.getElementById('todayDisplay').innerHTML =
+    `今天 <strong>${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()}</strong>（星期${DAY_CN[now.getDay()]}）`;
 
   document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.addEventListener('click', () => setFilter(btn.dataset.filter));
+  });
+  document.getElementById('calPrev').addEventListener('click', () => {
+    calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; }
+    renderCalendar();
+  });
+  document.getElementById('calNext').addEventListener('click', () => {
+    calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; }
+    renderCalendar();
+  });
+  document.getElementById('calClear').addEventListener('click', () => {
+    selectedDate = null;
+    renderCalendar();
+    renderTimeline();
   });
 
   fetch(DATA_URL)
@@ -302,13 +499,16 @@ document.addEventListener('DOMContentLoaded', () => {
     })
     .then(text => {
       allEvents = parseMarkdown(text);
-      lastUpdated = new Date().toISOString().slice(0, 16).replace('T', ' ');
+      const updated = new Date().toISOString().slice(0, 16).replace('T', ' ');
       document.getElementById('updateTime').textContent =
-        `資料更新：${lastUpdated}（自動解析 events.md）`;
-      render('all');
+        `資料更新：${updated}（自動解析 events.md）`;
+      renderFocus();
+      renderTimeline();
+      renderCalendar();
     })
     .catch(err => {
-      document.getElementById('eventList').innerHTML = `
+      const box = document.getElementById('eventList');
+      box.innerHTML = `
         <div class="empty">
           <div class="empty-icon">⚠️</div>
           <div>無法載入行事曆資料</div>
