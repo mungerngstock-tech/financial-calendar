@@ -151,8 +151,15 @@ function parseMarkdown(mdText) {
       continue;
     }
 
-    // Table header row: | 日期 | 時間 | ...
-    if (line.startsWith('|') && line.includes('日期') && line.includes('時間')) {
+    // Section heading ## or # — end current table context
+    if (line.startsWith('##') || line.startsWith('# ')) {
+      inTable = false;
+      currentDate = '';
+      continue;
+    }
+
+    // Table header row: | 時間 | 事件 | 重要性 | 分類 | 相關標的 | 備註 |
+    if (line.startsWith('|') && line.includes('時間') && line.includes('事件')) {
       inTable = true;
       colCount = line.split('|').filter(c => c.trim()).length;
       continue;
@@ -163,29 +170,27 @@ function parseMarkdown(mdText) {
       continue;
     }
 
-    // Data row
+    // Data row (date comes from the ### heading, table has no date column)
     if (inTable && line.startsWith('|') && currentDate) {
-      const cols = line.split('|').map(c => c.trim()).filter(c => c !== '');
+      // Keep empty trailing cells so the 備註 column survives even when blank
+      const parts = line.split('|');
+      const cols = parts.slice(1, parts.length - 1).map(c => c.trim());
       if (cols.length >= 6) {
-        // cols: [日期(含星期), 時間, 事件, 重要性, 分類, 相關標的, 備註]
-        // Extract date from first column (e.g., "2026-07-29（三）")
-        const dateFromCol = cols[0].match(/^(\d{4}-\d{2}-\d{2})/);
-        const evDate = dateFromCol ? dateFromCol[1] : currentDate;
-
-        const timeStr = cols[1] || '';
+        // cols: [時間, 事件, 重要性, 分類, 相關標的, 備註]
+        const timeStr = cols[0] || '';
         // Strip markdown bold from event name
-        const evName = (cols[2] || '').replace(/\*\*/g, '');
+        const evName = (cols[1] || '').replace(/\*\*/g, '');
         // Count stars for importance
-        const impStr = cols[3] || '';
+        const impStr = cols[2] || '';
         const impCount = (impStr.match(/⭐/g) || []).length || 3;
-        const category = cols[4] || '';
+        const category = cols[3] || '';
         // Parse tickers: split by comma, or single value
-        const tickerRaw = cols[5] || '';
+        const tickerRaw = cols[4] || '';
         const tickers = tickerRaw ? tickerRaw.split(/[,，]\s*/) : [];
-        const note = cols[6] || '';
+        const note = cols[5] || '';
 
         events.push({
-          date: evDate,
+          date: currentDate,
           day: currentWeekday,
           time: timeStr,
           name: evName,
@@ -200,12 +205,6 @@ function parseMarkdown(mdText) {
     // End of table (blank line after data rows)
     if (inTable && line === '') {
       inTable = false;
-    }
-
-    // Section heading like ## or # — end current table context
-    if (line.startsWith('##') || line.startsWith('# ')) {
-      inTable = false;
-      currentDate = '';
     }
   }
 
