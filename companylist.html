@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>公司清單 — 財經行事曆</title>
+<style>
+  :root {
+    --bg: #0f0f1a;
+    --card: #1a1a2e;
+    --card2: #16213e;
+    --text: #e0e0e0;
+    --text2: #a0a0b8;
+    --accent: #4f8cff;
+    --border: #2a2a4a;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg); color: var(--text); line-height:1.7; padding: 20px;
+  }
+  .container { max-width: 900px; margin: 0 auto; }
+  .header { margin-bottom: 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
+  h1 { font-size: 1.5rem; background: linear-gradient(135deg, #4f8cff, #ff6b81); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .subtitle { color: var(--text2); font-size: .85rem; }
+  .back-link { color: var(--accent); font-size: .82rem; text-decoration: none; border: 1px solid var(--border); padding: 4px 12px; border-radius: 14px; }
+  .back-link:hover { border-color: var(--accent); }
+
+  .search-bar { position: sticky; top: 0; background: var(--bg); padding: 10px 0; z-index: 10; }
+  .search-input {
+    width: 100%; padding: 10px 16px; border-radius: 10px; border: 1px solid var(--border);
+    background: var(--card); color: var(--text); font-size: .9rem;
+  }
+  .search-input:focus { outline: none; border-color: var(--accent); }
+  .stats { font-size: .78rem; color: var(--text2); margin: 12px 0; }
+
+  .company-list { display: flex; flex-direction: column; gap: 12px; }
+  .company-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    overflow: hidden; transition: all .2s;
+  }
+  .company-card:hover { border-color: var(--accent); }
+  .company-header {
+    display: flex; align-items: center; gap: 12px; padding: 12px 16px; cursor: pointer;
+    user-select: none;
+  }
+  .ticker-badge {
+    font-weight: 700; color: var(--accent); font-size: .95rem; min-width: 70px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  .company-name { font-weight: 600; font-size: 1rem; flex: 1; }
+  .company-arrow { color: var(--text2); transition: transform .2s; font-size: .8rem; }
+  .company-card.open .company-arrow { transform: rotate(90deg); }
+  .company-body { display: none; padding: 14px 16px 16px; border-top: 1px solid var(--border); }
+  .company-card.open .company-body { display: block; }
+  .comp-section { margin-bottom: 12px; }
+  .comp-section h3 {
+    font-size: .78rem; color: var(--accent); letter-spacing: 1px; margin-bottom: 4px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .comp-section h3::before { content: ''; width: 4px; height: 12px; border-radius: 2px; background: var(--accent); }
+  .comp-section p, .comp-section div { font-size: .88rem; color: var(--text); }
+  .note-line { font-size: .75rem; color: var(--text2); margin-top: 2px; }
+
+  .empty { text-align: center; padding: 60px 20px; color: var(--text2); }
+  .update-time { font-size: .75rem; color: var(--text2); margin-top: 30px; text-align: center; }
+
+  @media (max-width: 600px) {
+    body { padding: 12px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div>
+      <h1>📋 公司清單</h1>
+      <p class="subtitle">events.md 出現的公司 — 為何重要・競爭對手・上下游</p>
+    </div>
+    <a class="back-link" href="index.html">← 返回行事曆</a>
+  </div>
+
+  <div class="search-bar">
+    <input class="search-input" id="searchInput" placeholder="搜尋代碼或公司名…（如 NVDA、輝達）">
+  </div>
+  <div class="stats" id="stats"></div>
+
+  <div class="company-list" id="companyList"></div>
+  <div class="update-time" id="updateTime"></div>
+</div>
+
+<script>
+const DATA_URL = 'events.md';
+
+/* ---- 公司資料庫：為何重要 / 競爭對手 / 上下游 ---- */
+const COMPANIES = {
+  MSFT: {
+    name: '微軟 Microsoft',
+    why: '全球第二大市值科技龍頭。Azure 雲端與 AI 資本支出是全球科技業景氣風向標，Copilot / OpenAI 布局主導 AI 商用落地，財報反映企業 IT 與雲端支出動向。',
+    rivals: 'Amazon（AWS）、Google（GCP）、Apple、Oracle',
+    chain: '上游：NVIDIA / AMD GPU、伺服器 OEM；下游：企業客戶、開發者、SaaS 生態系',
+    note: '雲/AI 基建透視指標'
+  },
+  META: {
+    name: 'Meta 平台',
+    why: '全球社交媒體與數位廣告巨頭，廣告營收反映企業投放意願，是「廣告/流量」行業全球晴雨表，也主導 AI 推薦與元宇宙投資方向。',
+    rivals: 'Google（Alphabet）、TikTok、Amazon',
+    chain: '上游：NVIDIA GPU、資料中心；下游：廣告主、數十億月活用戶',
+    note: '廣告/流量透視指標'
+  },
+  QCOM: {
+    name: '高通 Qualcomm',
+    why: '手機基頻晶片與 AI 手機晶片龍頭，手握大量通訊專利授權。財報反映全球手機與 IoT 需求，是消費電子終端景氣的領先指標。',
+    rivals: 'MediaTek、Apple（自研晶片）、Intel',
+    chain: '上游：台積電/三星代工；下游：手機品牌、車廠',
+    note: '消費電子/手機晶片風向球'
+  },
+  ARM: {
+    name: '安謀 Arm',
+    why: '全球 99% 以上智慧手機與大量資料中心晶片採用其架構，是半導體上游的「賣鏟人」。AI 時代架構擴散至伺服器、車用與終端 NPU，地位持續上升。',
+    rivals: 'RISC-V（開放架構）、x86（Intel/AMD）',
+    chain: '上游：晶圓代工生態；下游：幾乎所有晶片設計公司（Apple、高通、NVIDIA）',
+    note: '半導體架構上游指標'
+  },
+  LRCX: {
+    name: 'Lam Research 科林研發',
+    why: '半導體蝕刻與沉積設備三巨頭之一，財報是「半導體設備投資 Capex」風向球，可透視晶圓代工與記憶體廠擴產意願，預判下游晶片供給。',
+    rivals: 'AMAT、東京威力科創 TEL',
+    chain: '上游：零組件/精密零件；下游：台積電、三星、SK hynix、美光',
+    note: '半導體設備風向球'
+  },
+  HOOD: {
+    name: 'Robinhood 羅賓漢',
+    why: '美國零佣金散戶交易平台代表，財報反映散戶情緒、交易量與加密貨幣熱度，是市場風險偏好與散戶資金流的參考指標。',
+    rivals: 'Charles Schwab、eToro、Coinbase',
+    chain: '上游：交易所、做市商；下游：零售投資者',
+    note: '散戶情緒參考'
+  },
+  PG: {
+    name: '寶僑 Procter & Gamble',
+    why: '全球消費品龍頭，旗下眾多日用品品牌。財報反映必需品消費力，是防禦型消費與民生通膨壓力的代表性指標。',
+    rivals: 'Unilever、Kimberly-Clark、Colgate',
+    chain: '上游：石化/農產原料；下游：超市、量販、電商',
+    note: '消費品龍頭'
+  },
+  GD: {
+    name: '通用動力 General Dynamics',
+    why: '美國國防與軍工龍頭之一，業務含戰鬥機、潛艦與 IT 服務。財報反映美國與盟國軍費支出趨勢，是國防板塊風向球。',
+    rivals: 'Lockheed Martin、RTX、Northrop Grumman',
+    chain: '上游：航太零件/材料；下游：美國國防部、盟國政府',
+    note: '國防軍工龍頭'
+  },
+  AAPL: {
+    name: '蘋果 Apple',
+    why: '全球市值最大公司之一，iPhone 生態與服務業務標竿。財報是消費電子終端需求最權威指標，AI（Apple Intelligence）策略牽動供應鏈與換機潮。',
+    rivals: 'Samsung、Google（Pixel）、Microsoft（PC）',
+    chain: '上游：台積電、鴻海/立訊；下游：全球消費者、服務生態',
+    note: '消費電子龍頭'
+  },
+  AMZN: {
+    name: '亞馬遜 Amazon',
+    why: '全球最大電商與雲端（AWS）雙龍頭，也涵蓋廣告與 AI 基建。財報同時反映消費力與企業雲端/AI 資本支出，是多重宏觀信號的綜合體。',
+    rivals: 'Walmart、Microsoft（雲）、Alibaba（電商）',
+    chain: '上游：雲硬體/物流；下游：消費者、企業客戶',
+    note: '消費+雲端雙風向球'
+  },
+  COIN: {
+    name: 'Coinbase 幣安美國',
+    why: '美國最大合規加密貨幣交易所，財報反映加密貨幣成交量與價格，是比特幣與整體加密資產熱度的公開晴雨表。',
+    rivals: 'Binance、Kraken、Robinhood',
+    chain: '上游：區塊鏈網路/流動性；下游：加密投資者',
+    note: '加密貨幣指標'
+  },
+  MSTR: {
+    name: 'Strategy（前 MicroStrategy）',
+    why: '轉型為比特幣儲備公司，持有大量比特幣，股價高度連動加密貨幣。財報與持倉公告是比特幣概念股與機構加密配置的代表。',
+    rivals: 'Coinbase、MARA、RIOT',
+    chain: '上游：比特幣現貨市場；下游：股票投資者',
+    note: '比特幣概念'
+  },
+  RIVN: {
+    name: 'Rivian 里維安',
+    why: '美國電動車新創代表，專注皮卡與 SUV。財報反映電動車需求、燒錢速度與融資能力，是電動車競爭格局的參考。',
+    rivals: 'Tesla、Ford、GM、Lucid',
+    chain: '上游：電池（LG/SK）、晶片；下游：消費者、商用車隊（亞馬遜）',
+    note: '電動車需求參考'
+  },
+  MA: {
+    name: 'Mastercard 萬事達卡',
+    why: '全球支付網路雙寡頭之一，交易量反映全球消費支出與跨境旅遊，是消費支出最即時的宏觀晴雨表之一。',
+    rivals: 'Visa、American Express、PayPal',
+    chain: '上游：銀行發卡機構；下游：商家、持卡人',
+    note: '支付龍頭，消費晴雨表'
+  },
+  SHEL: {
+    name: '殼牌 Shell',
+    why: '全球能源超級巨頭，綜合油氣與液化天然氣（LNG）業務。財報反映油氣價格與能源需求，是能源板塊與通膨成本的代表。',
+    rivals: 'ExxonMobil、BP、Chevron、TotalEnergies',
+    chain: '上游：油氣探勘/開採；下游：煉油、石化、LNG 客戶',
+    note: '能源巨頭'
+  },
+  XOM: {
+    name: '埃克森美孚 ExxonMobil',
+    why: '全球最大上市石油公司之一，垂直整合油氣與石化。財報是油價、能源資本支出與通膨成本的權威參考，影響能源股整體情緒。',
+    rivals: 'Chevron、Shell、BP',
+    chain: '上游：探勘生產；下游：煉油/石化/加油站',
+    note: '石油龍頭，透視能源業'
+  },
+  ABBV: {
+    name: '艾伯維 AbbVie',
+    why: '全球製藥龍頭之一，免疫藥 Humira、Rinvoq 與醫美業務。財報反映藥品專利懸崖與定價壓力，是醫藥產業代表。',
+    rivals: 'J&J、Pfizer、Merck、Eli Lilly',
+    chain: '上游：臨床研發/原料藥；下游：醫院、藥局、保險給付',
+    note: '藥廠龍頭'
+  },
+  CVX: {
+    name: '雪佛龍 Chevron',
+    why: '美國第二大石油巨頭，上游探勘與下游煉化兼具，積極投資低碳能源。財報是美國能源業景氣與資本紀律的代表。',
+    rivals: 'ExxonMobil、Shell、BP',
+    chain: '上游：頁岩油/深水探勘；下游：煉油、加油站',
+    note: '石油龍頭，透視能源業'
+  },
+  OXY: {
+    name: '西方石油 Occidental',
+    why: '美國頁岩油龍頭之一，巴菲特重倉標的。財報反映頁岩油生產成本與碳捕捉投資，是能源股另類指標。',
+    rivals: 'Chevron、ExxonMobil、EOG',
+    chain: '上游：頁岩開採；下游：煉化、石化',
+    note: '頁岩油/碳捕捉概念'
+  },
+  PLTR: {
+    name: 'Palantir 帕蘭提爾',
+    why: '美國國防與企業數據分析軟體公司，AI 數據平台成長極快。財報反映政府契約與商業 AI 落地速度，是 AI 軟體股高估值代表。',
+    rivals: 'Microsoft、Salesforce、Snowflake',
+    chain: '上游：雲端運算（AWS/Azure）；下游：政府、企業客戶',
+    note: 'AI 數據分析概念'
+  },
+  'BRK.B': {
+    name: '波克夏海瑟威 Berkshire Hathaway',
+    why: '巴菲特旗艦投資控股公司，持股市值全球最大之一，現金水位備受關注。財報（尤其持倉與營運利潤）被視為市場風險與價值投資風向球。',
+    rivals: '—（多元控股，與指數基金同向）',
+    chain: '上游：保險浮存金；下游：保險、公用事業、鐵路、持股組合',
+    note: '投資界風向球'
+  },
+  SPCX: {
+    name: 'SpaceX 太空探索',
+    why: '全球最大民營火箭與衛星（Starlink）公司，IPO 後首份財報備受矚目。其發射成本與星鏈營收牽動太空產業與軍民通訊。',
+    rivals: 'ULA、Blue Origin、Rocket Lab、Arianespace',
+    chain: '上游：火箭引擎/航太零件；下游：NASA、衛星客戶、Starlink 用戶',
+    note: '太空產業龍頭'
+  },
+  AMD: {
+    name: '超微 AMD',
+    why: 'CPU/GPU 雙線進逼，資料中心與 AI 加速器（MI 系列）是 NVIDIA 最直接對手。財報反映 PC 復甦與 AI 算力競爭格局。',
+    rivals: 'NVIDIA、Intel',
+    chain: '上游：台積電代工；下游：PC、伺服器、遊戲機 OEM',
+    note: 'AI 算力第二強'
+  },
+  DIS: {
+    name: '迪士尼 Disney',
+    why: '全球娛樂與串流（Disney+）巨頭，主題樂園與內容 IP 收入反映娛樂支出，是媒體娛樂業與體驗消費的風向球。',
+    rivals: 'Netflix、Comcast（Peacock）、Warner Bros. Discovery',
+    chain: '上游：內容製作/版權；下游：影院、串流訂閱、樂園遊客',
+    note: '娛樂消費龍頭'
+  },
+  UBER: {
+    name: 'Uber 優步',
+    why: '全球最大叫車與外送平台，網約車+外送雙引擎。財報反映出行需求、勞動力成本與共享經濟景氣，是服務消費的代表。',
+    rivals: 'Lyft、DoorDash、Grab',
+    chain: '上游：司機、餐廳商家；下游：乘客、外送消費者',
+    note: '服務消費指標'
+  },
+  SMCI: {
+    name: '美超微 Super Micro',
+    why: 'AI 伺服器組裝龍頭，液冷技術領先，直接受惠 AI 資本支出。財報是 AI 硬體供應鏈最敏感的實時指標，指引 NVIDIA 概念股方向。',
+    rivals: 'Dell、HPE、Foxconn',
+    chain: '上游：NVIDIA/AMD GPU、散熱零件；下游：雲端與 AI 資料中心',
+    note: 'AI 伺服器實時指標'
+  },
+  CSCO: {
+    name: '思科 Cisco',
+    why: '全球網路設備龍頭，企業路由/交換器市占第一。財報反映企業 IT 與網路基建支出，是科技資本開支的傳統風向球。',
+    rivals: 'Juniper（HP Enterprise）、Arista、Palo Alto',
+    chain: '上游：晶片（Broadcom 等）；下游：企業、電信商、雲端業者',
+    note: '企業 IT/網路支出指標'
+  },
+  AMAT: {
+    name: 'Applied Materials 應用材料',
+    why: '全球最大半導體設備商，產品橫跨沉積、蝕刻、離子植入。財報是晶圓代工與記憶體資本支出的首要指標，AI 擴產直接受惠。',
+    rivals: 'Lam Research、TEL、ASML（光刻不同賽道）',
+    chain: '上游：精密零組件/真空系統；下游：台積電、三星、Intel、美光',
+    note: '半導體設備風向球'
+  },
+  SNDK: {
+    name: 'Sandisk 晟碟',
+    why: 'NAND 快閃記憶體龍頭，2025 年從 Western Digital 分拆獨立。財報與 Investor Day 反映 AI 記憶體短缺、NAND 報價與儲存需求。',
+    rivals: 'Micron、Samsung、Kioxia、SK hynix',
+    chain: '上游：NAND 晶圓（3D NAND）、設備（AMAT/LRCX）；下游：資料中心、消費 SSD、手機',
+    note: 'NAND 快閃龍頭，透視 AI 記憶體'
+  },
+  PANW: {
+    name: 'Palo Alto Networks 派拓網路',
+    why: '網路安全龍頭，次世代防火牆與雲端安全平台。財報反映企業資安支出與「安全平台化」趨勢，是網安板塊最重要的風向球。',
+    rivals: 'CrowdStrike、Fortinet、Check Point、Zscaler',
+    chain: '上游：雲端運算、晶片；下游：企業/政府資安採購',
+    note: '網安龍頭，透視企業 IT 安全'
+  },
+  HD: {
+    name: '家得寶 Home Depot',
+    why: '全球最大家居建材零售商，DIY 與專業裝修雙重客戶。財報是房市與消費支出的雙風向球，高度連動利率與房屋成交量。',
+    rivals: 'Lowe\'s、Amazon、Ace Hardware',
+    chain: '上游：建材/五金供應商；下游：DIY 消費者、專業承包商',
+    note: '零售/房市雙風向球'
+  },
+  BHP: {
+    name: '必和必拓 BHP',
+    why: '全球最大礦業公司之一，鐵礦砂、銅、煤炭與鎳龍頭。財報反映中國需求、商品價格與全球資源景氣，是商品/原物料指標。',
+    rivals: 'Rio Tinto、Vale、Glencore',
+    chain: '上游：礦場開採；下游：鋼鐵廠、電池供應鏈、基建',
+    note: '全球礦業龍頭，透視商品需求'
+  },
+  LOW: {
+    name: '勞氏 Lowe\'s',
+    why: '美國第二大居家建材零售商，與 Home Depot 並稱雙寡頭。財報反映房市、DIY 需求與消費信心，是消費零售風向球。',
+    rivals: 'Home Depot、Amazon、Ace Hardware',
+    chain: '上游：建材/家電供應商；下游：DIY 消費者、承包商',
+    note: '家居零售龍頭，透視房市'
+  },
+  TJX: {
+    name: 'TJX Companies',
+    why: '全球最大折扣零售商（TJ Maxx / Marshalls），主打品牌尾貨與低價。財報反映消費者價格敏感度與「省錢消費」趨勢，是通膨下消費行為的晴雨表。',
+    rivals: 'Ross Stores、Burlington、Amazon',
+    chain: '上游：品牌商尾貨庫存；下游：價格敏感型消費者',
+    note: '折扣零售龍頭，透視消費力'
+  },
+  ADI: {
+    name: 'Analog Devices 亞德諾半導體',
+    why: '類比半導體龍頭之一，產品應用於工業、汽車、通訊與醫療。財報反映工業景氣與車用電子需求，是「舊經濟」半導體的風向球。',
+    rivals: 'Texas Instruments、Infineon、NXP、Maxim（已被 ADI 併購）',
+    chain: '上游：晶圓代工/自有晶圓廠；下游：工業設備、車廠、通訊',
+    note: '類比半導體龍頭，透視工業/汽車'
+  },
+  WMT: {
+    name: '沃爾瑪 Walmart',
+    why: '全球最大零售商，民生必需品供應鏈規模無出其右。財報是美國消費支出與通膨承受力的最重要指標，業績對經濟冷暖高度敏感。',
+    rivals: 'Amazon、Costco、Target、Aldi',
+    chain: '上游：全球供應鏈/民生供應商；下游：全球消費者',
+    note: '全球最大零售商，消費指標'
+  },
+  DE: {
+    name: '迪爾 Deere & Company',
+    why: '全球農機龍頭，拖拉機與精準農業設備，也布局工程機械。財報反映農業資本支出與糧價景氣，是農業/資本設備產業指標。',
+    rivals: 'CNH Industrial、AGCO、Caterpillar（工程機械）',
+    chain: '上游：引擎/鋼材/晶片；下游：農場主、農業合作社',
+    note: '農機龍頭，透視農業資本支出'
+  },
+  ROST: {
+    name: 'Ross Stores 羅斯',
+    why: '美國折扣服飾零售龍頭之一，主打品牌折扣。財報反映中低階消費者支出與折扣零售需求，是消費信心與降級消費的指標。',
+    rivals: 'TJX、Burlington、Target',
+    chain: '上游：品牌商庫存尾貨；下游：價格敏感型消費者',
+    note: '折扣零售商，透視消費力'
+  },
+  PDD: {
+    name: '拼多多 PDD Holdings',
+    why: '中國電商龍頭，旗下 Temu 加速海外擴張。財報反映中國消費與跨境電商成長，是中國消費力與全球性價比消費的指標。',
+    rivals: 'Alibaba、JD.com、Shein、Amazon',
+    chain: '上游：中國製造供應商；下游：中國與海外消費者',
+    note: '中國電商龍頭，透視中國消費'
+  },
+  MDB: {
+    name: 'MongoDB',
+    why: '主流 NoSQL 資料庫公司，現代應用開發首選之一。財報反映開發者生態與雲端資料庫需求，是軟體基建支出的領先指標。',
+    rivals: 'AWS（DynamoDB）、Google、Snowflake（部分重疊）',
+    chain: '上游：雲端運算（AWS/Azure）；下游：企業開發者、SaaS',
+    note: '資料庫/AI 基建需求指標'
+  },
+  NVDA: {
+    name: '輝達 NVIDIA',
+    why: 'AI 晶片絕對龍頭，GPU 與加速運算平台市占遙遙領先。財報是全球 AI 資本支出的核心晴雨表，影響整個 AI 供應鏈與市場情緒。',
+    rivals: 'AMD、Intel、Google（TPU）、自研晶片（各大雲廠）',
+    chain: '上游：台積電先進製程、HBM（SK hynix/美光）；下游：雲端、AI 公司、車廠',
+    note: 'AI 晶片晴雨表，資本支出核心'
+  },
+  SNOW: {
+    name: 'Snowflake',
+    why: '雲端資料倉儲龍頭，企業將資料集中與 AI 分析的核心平台。財報反映企業雲端資料支出與 AI 應用落地，是軟體景氣指標。',
+    rivals: 'AWS（Redshift）、Databricks、Google（BigQuery）',
+    chain: '上游：雲端運算（AWS/Azure）；下游：企業資料團隊',
+    note: '雲端/AI 資料支出指標'
+  },
+  CRWD: {
+    name: 'CrowdStrike 眾擊',
+    why: '雲端資安龍頭，EDR 端點防護市占領先。財報反映企業資安與訂閱制軟體需求，與 PANW 並列網安板塊雙指標。',
+    rivals: 'Palo Alto、Microsoft（Defender）、SentinelOne',
+    chain: '上游：雲端運算、威脅情報；下游：企業/政府資安採購',
+    note: '網安支出指標'
+  },
+  CDNS: {
+    name: 'Cadence 益華電腦',
+    why: '電子設計自動化（EDA）雙寡頭之一，晶片設計必備工具。財報反映半導體設計活動與先進製程需求，是晶片產業上游領先指標。',
+    rivals: 'Synopsys、Siemens EDA',
+    chain: '上游：—（軟體工具）；下游：所有晶片設計公司',
+    note: 'EDA 龍頭，透視晶片設計'
+  },
+  V: {
+    name: 'Visa 維薩',
+    why: '全球最大支付網路，交易量數據幾乎等於全球消費動能。財報是消費支出、跨境旅遊與數位支付滲透率的最權威指標。',
+    rivals: 'Mastercard、American Express、PayPal',
+    chain: '上游：銀行發卡機構；下游：商家、持卡人',
+    note: '支付龍頭，消費晴雨表'
+  },
+  BA: {
+    name: '波音 Boeing',
+    why: '全球航空製造雙寡頭之一（與空客），商用客機與國防太空業務。財報反映航空產業週期、供應鏈與生產復甦，是製造業代表。',
+    rivals: 'Airbus、Lockheed Martin（國防）',
+    chain: '上游：航太零組件、引擎；下游：航空公司、國防客戶',
+    note: '航太龍頭，透視製造業'
+  },
+  KO: {
+    name: '可口可樂 Coca-Cola',
+    why: '全球飲料龍頭，品牌護城河極深，營收遍佈全球。財報反映非必需消費與新興市場需求，是防禦型消費股代表。',
+    rivals: 'PepsiCo、Nestlé、Keurig Dr Pepper',
+    chain: '上游：糖/包材/濃縮液；下游：瓶裝廠、零售通路',
+    note: '消費防禦龍頭'
+  },
+  PYPL: {
+    name: 'PayPal 貝寶',
+    why: '全球線上支付龍頭，商戶支付與 Venmo。財報反映電商交易與數位支付成長，是支付板塊與消費者線上支出指標。',
+    rivals: 'Visa、Mastercard、Stripe、Square（Block）',
+    chain: '上游：銀行/卡組織；下游：電商商戶、消費者',
+    note: '線上支付龍頭'
+  }
+};
+
+/* ---- Parsing helpers ---- */
+function parseMarkdown(mdText) {
+  const lines = mdText.split('\n');
+  let currentDate = '';
+  let inTable = false;
+  const seen = new Map();
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    const h3 = line.match(/^###\s+(\d{4}-\d{2}-\d{2})（(.+?)）/);
+    if (h3) { currentDate = h3[1]; inTable = false; continue; }
+    if (line.startsWith('##') || line.startsWith('# ')) { inTable = false; currentDate = ''; continue; }
+    if (line.startsWith('|') && line.includes('時間') && line.includes('事件')) { inTable = true; continue; }
+    if (inTable && line.startsWith('|---')) { continue; }
+    if (inTable && line.startsWith('|') && currentDate) {
+      const parts = line.split('|');
+      const cols = parts.slice(1, parts.length - 1).map(c => c.trim());
+      if (cols.length >= 6) {
+        const raw = cols[4] || '';
+        raw.split(/[,，]\s*/).forEach(t => {
+          const tk = t.trim();
+          if (tk && tk !== '全市場') {
+            if (!seen.has(tk)) seen.set(tk, []);
+            seen.get(tk).push({ date: currentDate, name: cols[1].replace(/\*\*/g, '') });
+          }
+        });
+      }
+    }
+    if (inTable && line === '') inTable = false;
+  }
+  return seen;
+}
+
+/* ---- Render ---- */
+function render(filterText) {
+  const list = document.getElementById('companyList');
+  const stats = document.getElementById('stats');
+  const q = (filterText || '').trim().toLowerCase();
+  const entries = Array.from(allTickers.entries());
+
+  const matched = entries.filter(([tk, info]) => {
+    if (!q) return true;
+    const comp = COMPANIES[tk];
+    const name = comp ? comp.name : '';
+    return tk.toLowerCase().includes(q) || name.toLowerCase().includes(q);
+  });
+
+  stats.textContent = `共 ${entries.length} 間公司（events.md 出現的標的）`;
+
+  if (matched.length === 0) {
+    list.innerHTML = `<div class="empty">找不到符合「${filterText}」的公司</div>`;
+    return;
+  }
+
+  list.innerHTML = matched.map(([tk, info]) => {
+    const comp = COMPANIES[tk];
+    if (!comp) {
+      return `
+        <div class="company-card">
+          <div class="company-header">
+            <span class="ticker-badge">${tk}</span>
+            <span class="company-name">${tk}（未收錄介紹）</span>
+            <span class="company-arrow">▶</span>
+          </div>
+        </div>`;
+    }
+    return `
+      <div class="company-card">
+        <div class="company-header">
+          <span class="ticker-badge">${tk}</span>
+          <span class="company-name">${comp.name}</span>
+          <span class="company-arrow">▶</span>
+        </div>
+        <div class="company-body">
+          <div class="comp-section">
+            <h3>為何重要</h3>
+            <p>${comp.why}</p>
+            <div class="note-line">📌 ${comp.note}｜出現 ${info.length} 次（${info[info.length-1].date} 後）</div>
+          </div>
+          <div class="comp-section">
+            <h3>競爭對手</h3>
+            <p>${comp.rivals}</p>
+          </div>
+          <div class="comp-section">
+            <h3>上下游</h3>
+            <p>${comp.chain}</p>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+/* ---- Boot ---- */
+let allTickers = new Map();
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('searchInput').addEventListener('input', e => {
+    render(e.target.value);
+  });
+  document.getElementById('companyList').addEventListener('click', e => {
+    const card = e.target.closest('.company-card');
+    if (card) card.classList.toggle('open');
+  });
+
+  fetch(DATA_URL)
+    .then(res => { if (!res.ok) throw new Error('Network error: ' + res.status); return res.text(); })
+    .then(text => {
+      allTickers = parseMarkdown(text);
+      document.getElementById('updateTime').textContent =
+        `資料來源：events.md（${new Date().toISOString().slice(0, 16).replace('T', ' ')} 讀取）`;
+      render('');
+    })
+    .catch(err => {
+      document.getElementById('companyList').innerHTML = `
+        <div class="empty">
+          <div class="empty-icon">⚠️</div>
+          <div>無法載入 events.md</div>
+          <div style="font-size:.8rem;margin-top:8px">${err.message}</div>
+        </div>`;
+    });
+});
+</script>
+</body>
+</html>
