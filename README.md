@@ -8,14 +8,32 @@
 
 `events.md` 的更新由 AI 自動完成，流程如下：
 
-1. **檢查市場**：AI 搜尋近期市場重大財經事件（財報、總經、商品等）。
-2. **比對衝突**：AI 檢查最近兩週既有事件與新找到的事件是否有衝突：
+1. **檢查市場（未來 2 週）**：AI 搜尋**未來 2 週**（今天起往後 14 天）的市場重大財經事件（財報、總經、商品、解鎖等）。
+   - 來源參考：各公司 IR / earnings calendar、BLS、Fed、Census 官方發布時程、市場行事曆網站。
+2. **比對衝突（僅未來 2 週）**：AI 將新找到的事件與 `events.md` 中**未來 2 週**既有事件比對：
    - 無衝突 → 直接新增。
-   - 有衝突 → 先告知用戶，再決定處理方式。
-3. **新增不刪除**：一律以**新增**方式寫入 `events.md`，不刪除舊事件。
+   - 有衝突（同日期 + 同事件 + 同標的）→ 先告知用戶，再決定處理方式。
+   - **不要檢查過去事件**：過去的區塊原樣保留即可。
+3. **新增不刪除**：一律以**新增**方式寫入 `events.md`，**不刪除任何既有事件（含過去事件）**。
 4. **更新方式**：AI 向用戶取得 **GitHub API Token**（需 `repo` 權限），透過 GitHub Contents API 直接更新檔案並 commit，push 後 GitHub Pages 約 1-2 分鐘生效。
 
 > 你需要做的：提供 GitHub API Token，AI 會完成其餘步驟。
+
+## GitHub API 更新細節
+
+更新 `events.md` / `index.html` / `static/index.html` 時使用 **Contents API**：
+
+- **Endpoint**：`PUT https://api.github.com/repos/mungerngstock-tech/financial-calendar/contents/{路徑}`
+- **Headers**：`Authorization: token <TOKEN>`、`Accept: application/vnd.github+json`
+- **Body（JSON）**：
+  - `message`：commit 訊息（如 `docs: add WMT earnings`）
+  - `content`：檔案內容的 **Base64** 編碼
+  - `sha`：該檔案的**目前 SHA**（更新前先 `GET` 同一 endpoint 取得，避免覆寫衝突）
+- **檔案路徑**：
+  - `events.md`（行事曆資料源，主要更新對象）
+  - `index.html`（前端檢視器）
+  - `static/index.html`（備份副本，內容與 `index.html` 相同，僅 `DATA_URL` 改為 `../events.md`）
+- **commit 訊息慣例**：`docs:`（事件/文件）、`refactor:`（格式/程式）、`feat:`（新功能）
 
 ## 專案結構
 
