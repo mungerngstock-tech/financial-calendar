@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>財經行事曆</title>
+<title>鞎∠?銵???/title>
 <style>
   :root {
     --bg: #0f0f1a;
@@ -93,19 +93,19 @@
 <div class="container">
   <div class="header">
     <div class="header-top">
-      <h1>📅 財經行事曆</h1>
+      <h1>?? 鞎∠?銵???/h1>
       <div class="today-display" id="todayDisplay"></div>
     </div>
-    <p class="subtitle">直接讀取 events.md，編輯 MD 即更新</p>
+    <p class="subtitle">?湔霈??events.md嚗楊頛?MD ?單??/p>
   </div>
 
   <div class="filter-bar" id="filterBar">
-    <button class="filter-btn active" data-filter="all">全部</button>
-    <button class="filter-btn" data-filter="5">🔥 最重要</button>
-    <button class="filter-btn" data-filter="4">⭐ 重要</button>
-    <button class="filter-btn" data-filter="財報">📊 財報</button>
-    <button class="filter-btn" data-filter="總經">🌍 總經</button>
-    <button class="filter-btn" data-filter="today">📌 今天</button>
+    <button class="filter-btn active" data-filter="all">?券</button>
+    <button class="filter-btn" data-filter="5">? ???</button>
+    <button class="filter-btn" data-filter="4">潃???</button>
+    <button class="filter-btn" data-filter="鞎∪">?? 鞎∪</button>
+    <button class="filter-btn" data-filter="蝮賜?">?? 蝮賜?</button>
+    <button class="filter-btn" data-filter="today">?? 隞予</button>
   </div>
 
   <div id="eventList"></div>
@@ -115,9 +115,9 @@
 <script>
 const DATA_URL = '../events.md';
 
-const IMP_STARS = { 5: '🔥', 4: '⭐', 3: '📌', 2: '💡' };
+const IMP_STARS = { 5: '?', 4: '潃?, 3: '??', 2: '?' };
 const IMP_CLASS = { 5: 'imp-5', 4: 'imp-4', 3: 'imp-3', 2: 'imp-2' };
-const DAY_CN = ['日', '一', '二', '三', '四', '五', '六'];
+const DAY_CN = ['??, '銝', '鈭?, '銝?, '??, '鈭?, '??];
 
 let allEvents = [];
 let currentFilter = 'all';
@@ -142,8 +142,8 @@ function parseMarkdown(mdText) {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
 
-    // H3 heading: ### 2026-07-29（三）
-    const h3Match = line.match(/^###\s+(\d{4}-\d{2}-\d{2})（(.+?)）/);
+    // H3 heading: ### 2026-07-29嚗?嚗?
+    const h3Match = line.match(/^###\s+(\d{4}-\d{2}-\d{2})嚗?.+?)嚗?);
     if (h3Match) {
       currentDate = h3Match[1];
       currentWeekday = h3Match[2];
@@ -151,8 +151,15 @@ function parseMarkdown(mdText) {
       continue;
     }
 
-    // Table header row: | 日期 | 時間 | ...
-    if (line.startsWith('|') && line.includes('日期') && line.includes('時間')) {
+    // Section heading ## or # ??end current table context
+    if (line.startsWith('##') || line.startsWith('# ')) {
+      inTable = false;
+      currentDate = '';
+      continue;
+    }
+
+    // Table header row: | ?? | 鈭辣 | ????| ?? | ?賊?璅? | ?酉 |
+    if (line.startsWith('|') && line.includes('??') && line.includes('鈭辣')) {
       inTable = true;
       colCount = line.split('|').filter(c => c.trim()).length;
       continue;
@@ -163,29 +170,27 @@ function parseMarkdown(mdText) {
       continue;
     }
 
-    // Data row
+    // Data row (date comes from the ### heading, table has no date column)
     if (inTable && line.startsWith('|') && currentDate) {
-      const cols = line.split('|').map(c => c.trim()).filter(c => c !== '');
+      // Keep empty trailing cells so the ?酉 column survives even when blank
+      const parts = line.split('|');
+      const cols = parts.slice(1, parts.length - 1).map(c => c.trim());
       if (cols.length >= 6) {
-        // cols: [日期(含星期), 時間, 事件, 重要性, 分類, 相關標的, 備註]
-        // Extract date from first column (e.g., "2026-07-29（三）")
-        const dateFromCol = cols[0].match(/^(\d{4}-\d{2}-\d{2})/);
-        const evDate = dateFromCol ? dateFromCol[1] : currentDate;
-
-        const timeStr = cols[1] || '';
+        // cols: [??, 鈭辣, ???? ??, ?賊?璅?, ?酉]
+        const timeStr = cols[0] || '';
         // Strip markdown bold from event name
-        const evName = (cols[2] || '').replace(/\*\*/g, '');
+        const evName = (cols[1] || '').replace(/\*\*/g, '');
         // Count stars for importance
-        const impStr = cols[3] || '';
-        const impCount = (impStr.match(/⭐/g) || []).length || 3;
-        const category = cols[4] || '';
+        const impStr = cols[2] || '';
+        const impCount = (impStr.match(/潃?g) || []).length || 3;
+        const category = cols[3] || '';
         // Parse tickers: split by comma, or single value
-        const tickerRaw = cols[5] || '';
-        const tickers = tickerRaw ? tickerRaw.split(/[,，]\s*/) : [];
-        const note = cols[6] || '';
+        const tickerRaw = cols[4] || '';
+        const tickers = tickerRaw ? tickerRaw.split(/[,嚗\s*/) : [];
+        const note = cols[5] || '';
 
         events.push({
-          date: evDate,
+          date: currentDate,
           day: currentWeekday,
           time: timeStr,
           name: evName,
@@ -200,12 +205,6 @@ function parseMarkdown(mdText) {
     // End of table (blank line after data rows)
     if (inTable && line === '') {
       inTable = false;
-    }
-
-    // Section heading like ## or # — end current table context
-    if (line.startsWith('##') || line.startsWith('# ')) {
-      inTable = false;
-      currentDate = '';
     }
   }
 
@@ -222,8 +221,8 @@ function filterEvents(events, filter) {
   if (filter === 'all') return upcoming;
   if (filter === '5') return upcoming.filter(e => e.importance === 5);
   if (filter === '4') return upcoming.filter(e => e.importance >= 4);
-  if (filter === '財報') return upcoming.filter(e => e.category === '財報');
-  if (filter === '總經') return upcoming.filter(e => e.category === '總經');
+  if (filter === '鞎∪') return upcoming.filter(e => e.category === '鞎∪');
+  if (filter === '蝮賜?') return upcoming.filter(e => e.category === '蝮賜?');
   return upcoming;
 }
 
@@ -248,9 +247,9 @@ function render(filter) {
   if (grouped.length === 0) {
     container.innerHTML = `
       <div class="empty">
-        <div class="empty-icon">🎉</div>
-        <div>近期無重大事件</div>
-        <div style="font-size:.8rem;margin-top:8px">或切換篩選條件查看</div>
+        <div class="empty-icon">??</div>
+        <div>餈??⊿?憭找?隞?/div>
+        <div style="font-size:.8rem;margin-top:8px">???祟?豢?隞嗆??/div>
       </div>`;
     return;
   }
@@ -259,8 +258,8 @@ function render(filter) {
     <div class="day-group">
       <div class="day-header ${isToday(g.date) ? 'today' : ''}">
         <span class="day-date">${g.date}</span>
-        <span class="day-weekday">星期${g.weekday}</span>
-        ${isToday(g.date) ? '<span class="today-badge">今天</span>' : ''}
+        <span class="day-weekday">??${g.weekday}</span>
+        ${isToday(g.date) ? '<span class="today-badge">隞予</span>' : ''}
       </div>
       ${g.events.map(e => `
         <div class="event-card ${IMP_CLASS[e.importance] || ''}">
@@ -268,7 +267,7 @@ function render(filter) {
           <div class="event-body">
             <div class="event-name">${e.name}</div>
             <div class="event-meta">
-              <span class="event-time">🕐 ${e.time}</span>
+              <span class="event-time">?? ${e.time}</span>
               <span>${e.category}</span>
               ${e.tickers.map(t => `<span class="ticker">${t}</span>`).join('')}
             </div>
@@ -290,7 +289,7 @@ function setFilter(filter) {
 
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('todayDisplay').textContent =
-    `今天是 ${new Date().getFullYear()}年${new Date().getMonth()+1}月${new Date().getDate()}日`;
+    `隞予??${new Date().getFullYear()}撟?{new Date().getMonth()+1}??{new Date().getDate()}?匝;
 
   document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.addEventListener('click', () => setFilter(btn.dataset.filter));
@@ -305,14 +304,14 @@ document.addEventListener('DOMContentLoaded', () => {
       allEvents = parseMarkdown(text);
       lastUpdated = new Date().toISOString().slice(0, 16).replace('T', ' ');
       document.getElementById('updateTime').textContent =
-        `資料更新：${lastUpdated}（自動解析 events.md）`;
+        `鞈??湔嚗?{lastUpdated}嚗?圾??events.md嚗;
       render('all');
     })
     .catch(err => {
       document.getElementById('eventList').innerHTML = `
         <div class="empty">
-          <div class="empty-icon">⚠️</div>
-          <div>無法載入行事曆資料</div>
+          <div class="empty-icon">??</div>
+          <div>?⊥?頛銵?????/div>
           <div style="font-size:.8rem;margin-top:8px">${err.message}</div>
         </div>`;
     });
